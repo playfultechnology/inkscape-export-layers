@@ -2,7 +2,7 @@
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
     <_name>Export layers</_name>
 
-    <id>com.over9000.export-layers-2</id>
+    <id>com.playfultechnology.export-layers</id>
 
     <dependency type="executable" location="inx">export_layers.py</dependency>
 
@@ -13,13 +13,13 @@
     <param name="help" type="description">  </param>
     <param name="help" type="description">  Output filename is of the form: </param>
     <param name="help" type="description">    /path/to/output/directory/[subdirectory/][prefix_][number_]layer_name.ext  </param>
-    <param name="help" type="description">  with [subdirectory], [prefix] and [number] being optionnal </param>
+    <param name="help" type="description">  with [subdirectory], [prefix] and [number] being optional </param>
     <param name="help" type="description">  </param>
     <param name="help" type="description">  If you pick a file below,     </param>
     <param name="help" type="description">  - Its directory will be the '/path/to/output/directory/'.   </param>
     <param name="help" type="description">  - Its filename will be the [prefix] (leave filename empty for no prefix)   </param>
     <param name="help" type="description"> If you leave this box empty, default output directory will be '~/' with no prefix    </param>
-    <param name="output-source" type="path" _gui-text="Source file"></param>
+    <param name="output-source" type="path" _gui-text="Output"></param>
     <param name="help" type="description">     </param>
     <param name="help" type="description"> Name of [subdirectory/] to export to (leave empty for no subdirectory)     </param>
     <param name="output-subdir" type="string" _gui-text="Sub-directory">layers/</param>
@@ -33,7 +33,7 @@
     </param>
 
     <param name="help" type="description">     </param>
-    <param name="help" type="description"> Show all exported layers below the currentl layer.     </param>
+    <param name="help" type="description"> Show all exported layers below the current layer.     </param>
     <param name="show-layers-below" type="boolean" _gui-text="Progressively reveal elements of a figure">true</param>
 
     <param name="help" type="description">     </param>
