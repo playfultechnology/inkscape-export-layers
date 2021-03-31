@@ -220,7 +220,8 @@ class LayerExport(inkex.Effect):
             if layer.attrib['id'] in export.visible_layers:
                 layer.attrib['style'] = 'display:inline'
             else:
-                layer.attrib['style'] = 'display:none'
+                #layer.attrib['style'] = 'display:none'
+                layer.delete()
 
         output_file = os.path.join(output_dir, export.file_name + '.svg')
         document.write(output_file)
