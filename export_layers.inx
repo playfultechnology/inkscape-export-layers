@@ -33,6 +33,11 @@
     </param>
 
     <param name="help" type="description">     </param>
+    <param name="help" type="description"> Export all layers     </param>
+    <param name="export-all-layers" type="boolean" _gui-text="Export all layers">true</param>
+	<param name="help" type="description">     </param>
+
+    <param name="help" type="description">     </param>
     <param name="help" type="description"> Show all exported layers below the current layer.     </param>
     <param name="show-layers-below" type="boolean" _gui-text="Progressively reveal elements of a figure">true</param>
 

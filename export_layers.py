@@ -71,6 +71,13 @@ class LayerExport(inkex.Effect):
                                      dest='show_layers_below',
                                      default=None,
                                      help="Show exported layers below the current layer")
+        self.arg_parser.add_argument('--export-all-layers',
+                                     action='store',
+                                     type=str,
+                                     dest='export_all_layers',
+                                     default=None,
+                                     help="Export all layers")                               
+                                     
 
     def effect(self):
         
@@ -78,6 +85,7 @@ class LayerExport(inkex.Effect):
         self.options.fit_contents      = True if self.options.fit_contents      == 'true' else False
         self.options.enumerate         = True if self.options.enumerate         == 'true' else False
         self.options.show_layers_below = True if self.options.show_layers_below == 'true' else False
+        self.options.export_all_layers = True if self.options.export_all_layers == 'true' else False
 
         #get output dir from specified source file
         #otherwise set it as $HOME
@@ -104,6 +112,7 @@ class LayerExport(inkex.Effect):
 
         layer_list = self.get_layer_list()
         export_list = self.get_export_list(layer_list, self.options.show_layers_below)
+
         with _make_temp_directory() as tmp_dir:
             for export in export_list:
                 svg_file = self.export_to_svg(export, tmp_dir)
@@ -140,8 +149,11 @@ class LayerExport(inkex.Effect):
 
             layer_id = layer.attrib['id']
             layer_label = layer.attrib[label_attrib_name]
-
-            if layer_label.lower().startswith(FIXED):
+            
+            if self.options.export_all_layers:
+                layer_type = EXPORT
+                layer_label = layer_label  
+            elif layer_label.lower().startswith(FIXED):
                 layer_type = FIXED
                 layer_label = layer_label[len(FIXED):].lstrip()
             elif layer_label.lower().startswith(F):
