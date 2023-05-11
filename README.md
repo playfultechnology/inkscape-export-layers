@@ -2,6 +2,7 @@
 
 Inkscape extension to export layers as individual SVG, PNG, PDF or JPEG images.
 I use this to separate out engraving and cut layers to send to <a href="www.lasergrbl.com">LaserGRBL</a>, although I'm sure it has other uses. 
+<img src="usage.jpg" />
 
 This version works with Inkscape version 1.2. Note that, although there is a "batch export" function built into LaserGRBL, it automatically crops the exported files to the extent of features in that layer, which makes it unusable for this purpose. There is an open <a href="https://gitlab.com/inkscape/inbox/-/issues/6714">feature request</a> in the Inkscape queue to improve the batch export functionality but, until then, feel free to use this extension!
 
