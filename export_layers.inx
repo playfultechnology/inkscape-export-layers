@@ -1,54 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
-    <_name>Export layers</_name>
+    <_name>Export Layers</_name>
 
     <id>com.playfultechnology.export-layers</id>
 
     <dependency type="executable" location="inx">export_layers.py</dependency>
 
-    <param name="help" type="description">  Export layers in different files   </param>
-    <param name="help" type="description">  </param>
-    <param name="help" type="description">  Layers with a name starting with "[fixed]"  or "[f]" are always exported.   </param>
-    <param name="help" type="description">  Layers with a name starting with "[export]" or "[e]" are progressively exported in their respective order.   </param>
-    <param name="help" type="description">  </param>
-    <param name="help" type="description">  Output filename is of the form: </param>
-    <param name="help" type="description">    /path/to/output/directory/[subdirectory/][prefix_][number_]layer_name.ext  </param>
-    <param name="help" type="description">  with [subdirectory], [prefix] and [number] being optional </param>
-    <param name="help" type="description">  </param>
-    <param name="help" type="description">  If you pick a file below,     </param>
-    <param name="help" type="description">  - Its directory will be the '/path/to/output/directory/'.   </param>
-    <param name="help" type="description">  - Its filename will be the [prefix] (leave filename empty for no prefix)   </param>
-    <param name="help" type="description"> If you leave this box empty, default output directory will be '~/' with no prefix    </param>
-    <param name="output-source" type="path" _gui-text="Output"></param>
+    <label>Export layers to separate files</label>
+    <param name="output-source" type="path" mode="folder" _gui-text="Output Directory"></param>
     <param name="help" type="description">     </param>
-    <param name="help" type="description"> Name of [subdirectory/] to export to (leave empty for no subdirectory)     </param>
-    <param name="output-subdir" type="string" _gui-text="Sub-directory">layers/</param>
-    <param name="help" type="description">     </param>
-    <param name="enumerate" type="boolean" _gui-text="Add layer {number} to filenames ('001', '002', etc.)">false </param>
-    <param name="help" type="description">     </param>
-
+    <param name="enumerate" type="boolean" _gui-text="Add numbered prefix to filenames ('001_Layer', '002_Layer', etc.)">false </param>
+	<separator />
     <param name="fit-contents" type="optiongroup"  _gui-text="Area to export">
-        <option value="false" selected="selected">Use document boundaries</option>
-        <option value="true">Fit document size to layer content</option>
+        <option value="false" selected="selected">Full page</option>
+        <option value="true">Fit to layer content</option>
     </param>
-
-    <param name="help" type="description">     </param>
-    <param name="help" type="description"> Export all layers     </param>
-    <param name="export-all-layers" type="boolean" _gui-text="Export all layers">true</param>
-	<param name="help" type="description">     </param>
-
-    <param name="help" type="description">     </param>
-    <param name="help" type="description"> Show all exported layers below the current layer.     </param>
-    <param name="show-layers-below" type="boolean" _gui-text="Progressively reveal elements of a figure">true</param>
-
-    <param name="help" type="description">     </param>
+	<separator />
     <param name="file-type" type="optiongroup"  _gui-text="Output file type">
         <option value="pdf" selected="selected">PDF</option>
         <option value="svg">SVG</option>
         <option value="png">PNG</option>
         <option value="jpeg">JPEG (requires ImageMagick)</option>
     </param>
-
     <param name="dpi" type="int" min="1" max="1024" _gui-text="Export DPI (for raster formats)">96</param>
 
     <effect needs-live-preview="false">

@@ -1,3 +1,6 @@
+# See https://inkscape.org/doc/inkscape-man.html
+# for Inkscape command line parameters
+
 #! /usr/bin/env python
 import collections
 import contextlib
@@ -7,24 +10,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
-
-sys.path.append('/usr/share/inkscape/extensions')
 import inkex
-#inkex.localization.localize()
-
-Layer = collections.namedtuple('Layer', ['id', 'label', 'tag'])
-Export = collections.namedtuple('Export', ['visible_layers', 'file_name'])
-
-FIXED  = '[fixed]'
-F      = '[f]'
-EXPORT = '[export]'
-E      = '[e]'
-
+# Define filetype extensions
 PDF = 'pdf'
 SVG = 'svg'
 PNG = 'png'
 JPEG = 'jpeg'
-
 
 class LayerExport(inkex.Effect):
     def __init__(self):
@@ -35,12 +26,6 @@ class LayerExport(inkex.Effect):
                                      dest='output_source',
                                      default='~/',
                                      help='Path to source file in output directory')
-        self.arg_parser.add_argument('--output-subdir',
-                                     action='store',
-                                     type=str,
-                                     dest='output_subdir',
-                                     default='',
-                                     help='name of sub-directory in output path')
         self.arg_parser.add_argument('-f', '--file-type',
                                      action='store',
                                      choices=(PDF, PNG, SVG, JPEG),
@@ -65,30 +50,15 @@ class LayerExport(inkex.Effect):
                                      dest='enumerate',
                                      default=None,
                                      help="suffix of files exported")
-        self.arg_parser.add_argument('--show-layers-below',
-                                     action='store',
-                                     type=str,
-                                     dest='show_layers_below',
-                                     default=None,
-                                     help="Show exported layers below the current layer")
-        self.arg_parser.add_argument('--export-all-layers',
-                                     action='store',
-                                     type=str,
-                                     dest='export_all_layers',
-                                     default=None,
-                                     help="Export all layers")                               
-                                     
 
     def effect(self):
         
-        #process bool inputs that were read as strings
+        # Process bool inputs that were read as strings
         self.options.fit_contents      = True if self.options.fit_contents      == 'true' else False
         self.options.enumerate         = True if self.options.enumerate         == 'true' else False
-        self.options.show_layers_below = True if self.options.show_layers_below == 'true' else False
-        self.options.export_all_layers = True if self.options.export_all_layers == 'true' else False
 
-        #get output dir from specified source file
-        #otherwise set it as $HOME
+        # Get output dir from specified source file
+        # Otherwise set it as $HOME
         source = self.options.output_source
         if os.path.isfile(source):
             output_dir = os.path.dirname(source)
@@ -104,121 +74,45 @@ class LayerExport(inkex.Effect):
         else:
             raise Exception('output_source not a file or a dir...')
 
-        #add subdir if one was passed
-        output_dir = os.path.join(output_dir, self.options.output_subdir)
-
+        # Create output directory if required
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        layer_list = self.get_layer_list()
-        export_list = self.get_export_list(layer_list, self.options.show_layers_below)
-
-        with _make_temp_directory() as tmp_dir:
-            for export in export_list:
-                svg_file = self.export_to_svg(export, tmp_dir)
-
-                if self.options.file_type == PNG:
-                    if not self.convert_svg_to_png(svg_file, output_dir, prefix):
-                        break
-                elif self.options.file_type == SVG:
-                    if not self.convert_svg_to_svg(svg_file, output_dir, prefix):
-                        break
-                elif self.options.file_type == PDF:
-                    if not self.convert_svg_to_pdf(svg_file, output_dir, prefix):
-                        break
-                elif self.options.file_type == JPEG:
-                    if not self.convert_png_to_jpeg(
-                            self.convert_svg_to_png(svg_file, tmp_dir, prefix),
-                            output_dir, prefix):
-                        break
-
-    def get_layer_list(self):
-        """make a list od layers in source svg file
-            
-            Elements of the list are  of the form (id, label (layer name), tag ('[fixed]' or '[export]')
-                                                        
-        """
-        svg_layers = self.document.xpath('//svg:g[@inkscape:groupmode="layer"]',
+        # Create a list of all layers in the SVG file
+        layer_list = self.document.xpath('//svg:g[@inkscape:groupmode="layer"]',
                                          namespaces=inkex.NSS)
-        layer_list = []
+        
+        with _make_temp_directory() as tmp_dir:
+            for counter, layer in enumerate(layer_list):
 
-        for layer in svg_layers:
-            label_attrib_name = '{%s}label' % layer.nsmap['inkscape']
-            if label_attrib_name not in layer.attrib:
-                continue
-
-            layer_id = layer.attrib['id']
-            layer_label = layer.attrib[label_attrib_name]
-            
-            if self.options.export_all_layers:
-                layer_type = EXPORT
-                layer_label = layer_label  
-            elif layer_label.lower().startswith(FIXED):
-                layer_type = FIXED
-                layer_label = layer_label[len(FIXED):].lstrip()
-            elif layer_label.lower().startswith(F):
-                layer_type = FIXED
-                layer_label = layer_label[len(F):].lstrip()
-            elif layer_label.lower().startswith(EXPORT):
-                layer_type = EXPORT
-                layer_label = layer_label[len(EXPORT):].lstrip()
-            elif layer_label.lower().startswith(E):
-                layer_type = EXPORT
-                layer_label = layer_label[len(E):].lstrip()
-            else:
-                continue
-
-            layer_list.append(Layer(layer_id, layer_label, layer_type))
-
-        return layer_list
-
-    def get_export_list(self, layer_list, show_layers_below):
-        """selection of layers that should be visible
-
-            Each element of this list will be exported in its own file
-        """
-        export_list = []
-
-        for counter, layer in enumerate(layer_list):
-            #each layer marked as '[export]' is the basis for making a figure that will be exported
-
-            if layer.tag == FIXED:
-                #Fixed layers are not the basis of exported figures
-                continue
-            elif layer.tag == EXPORT:
-
-                #determine which other layers should appear in this figure
-                visible_layers = set()
-                layer_is_below = True
-                for other_layer in layer_list:
-                    if other_layer.tag == FIXED:
-                        #fixed layers appear in all figures
-                        #irrespective of their position relative to other layers
-                        visible_layers.add(other_layer.id)
-                    else:
-                        if other_layer.id == layer.id:
-                            #the basis layer for this figure is always visible
-                            visible_layers.add(other_layer.id)
-                            #all subsequent layers will be above
-                            layer_is_below = False
-
-                        elif layer_is_below and show_layers_below:
-                            visible_layers.add(other_layer.id)
-
-                layer_name = layer.label
+                layer_id = layer.attrib['id']
+                label_attrib_name = '{%s}label' % layer.nsmap['inkscape']
+                layer_name = layer.attrib[label_attrib_name]
                 if self.options.enumerate:
                     layer_name = '{:03d}_{}'.format(counter + 1, layer_name)
 
-                export_list.append(Export(visible_layers, layer_name))
-            else:
-                #layers not marked as FIXED of EXPORT are ignored
-                pass
+                for o_layer in layer_list:
+                    # First, make an SVG version of the selected layer only
+                    svg_file = self.export_to_svg(layer, layer_name, tmp_dir)
+                    # Then, convert into the chosen format
+                    if self.options.file_type == PNG:
+                        if not self.convert_svg_to_png(svg_file, output_dir, prefix):
+                            break
+                    elif self.options.file_type == SVG:
+                        if not self.convert_svg_to_svg(svg_file, output_dir, prefix):
+                            break
+                    elif self.options.file_type == PDF:
+                        if not self.convert_svg_to_pdf(svg_file, output_dir, prefix):
+                            break
+                    elif self.options.file_type == JPEG:
+                        if not self.convert_png_to_jpeg(
+                                self.convert_svg_to_png(svg_file, tmp_dir, prefix),
+                                output_dir, prefix):
+                            break
 
-        return export_list
-
-    def export_to_svg(self, export, output_dir):
+    def export_to_svg(self, export, layer_name, output_dir):
         """
-        Export a current document to an Inkscape SVG file.
+        Export the specified layer of the current document to an Inkscape SVG file.
         :arg Export export: Export description.
         :arg str output_dir: Path to an output directory.
         :return Output file path.
@@ -229,13 +123,13 @@ class LayerExport(inkex.Effect):
                                     namespaces=inkex.NSS)
 
         for layer in svg_layers:
-            if layer.attrib['id'] in export.visible_layers:
+            if layer.attrib['id'] == export.attrib['id']:
                 layer.attrib['style'] = 'display:inline'
             else:
                 #layer.attrib['style'] = 'display:none'
                 layer.delete()
 
-        output_file = os.path.join(output_dir, export.file_name + '.svg')
+        output_file = os.path.join(output_dir, layer_name + '.svg')
         document.write(output_file)
 
         return output_file
@@ -252,7 +146,7 @@ class LayerExport(inkex.Effect):
         command = [
             'inkscape',
             svg_file.encode('utf-8'),
-            '--batch-process', 
+            #'--batch-process', 
             '--export-area-drawing' if self.options.fit_contents else 
             '--export-area-page',
             '--export-dpi', str(self.options.dpi),
@@ -277,17 +171,21 @@ class LayerExport(inkex.Effect):
         command = [
             'inkscape',
             svg_file.encode('utf-8'),    
-            '--batch-process', 
+            #'--batch-process', 
             '--export-area-drawing' if self.options.fit_contents else 
             '--export-area-page',
             '--export-dpi', str(self.options.dpi),
-            '--export-plain-svg', 
+            '--export-type', 'svg', 
+            '--export-text-to-path',
             '--vacuum-defs',
-            '--export-filename',output_file.encode('utf-8')
+            '--export-plain-svg',
+            '--export-filename', output_file.encode('utf-8')
         ]
         result = subprocess.run(command, capture_output=True)
+        #raise Exception('Result %s %s %s' % (svg_file, result.stdout, result.stderr))
+
         if result.returncode != 0:
-            raise Exception('Failed to convert %s to SVG' % svg_file)
+            raise Exception('Failed to convert %s to SVG' % svg_file, result.stdout, result.stderr)
 
         return output_file
 
@@ -303,7 +201,7 @@ class LayerExport(inkex.Effect):
         command = [
             'inkscape',
             svg_file.encode('utf-8'),    
-            '--batch-process', 
+            #'--batch-process', 
             '--export-area-drawing' if self.options.fit_contents else 
             '--export-area-page',
             '--export-type=pdf', 
