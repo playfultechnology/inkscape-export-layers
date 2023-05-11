@@ -11,8 +11,7 @@ The code here heavily relies on previous work by github users: @jespino, @dmitry
 
 To use the extension once your layers are ready:
 
-1. Get the code from the github page. (`Code -> Download ZIP` if you are unfamiliar with git clone)
-1. Put the `inkscape-export-layers` directory where Inkscape will find it. (`C:\Users\username\AppData\Roaming\inkscape` on Windows, or `~/.config/inkscape/extensions/` on linux)
+1.  Download `export_layers.inx` and `export_layers.py` and place them in your Inkscape extensions folder (`C:\Users\username\AppData\Roaming\inkscape\extensions` on Windows, or `~/.config/inkscape/extensions/` on linux)
 1. Open Inkscape
 1. Go to `Extensions` > `Export` > `Export Layers...`
 1. Follow instructions in pop-up dialog and set options for your export
